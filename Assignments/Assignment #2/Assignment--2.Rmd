@@ -1,17 +1,23 @@
 ---
-title: "Assignment #2 USPTO Data"
-output: github_document
+output:
+  md_document:
+    variant: markdown_githu
 ---
 
-```{r setup, include=FALSE
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r Data_load1, echo=F}
 aus=read.csv("examiner_aus.csv")
 gs=read.csv("examiner_gs.csv")
 ids=read.csv("examiner_ids.csv")
 
 #install.packages("gender")
 #install.packages("wru")
+```
 
+```{r first layer transformation}
 library(gender)
 library(wru)
 library(stringr)
@@ -44,9 +50,9 @@ ids <- merge(ids, Gender, by = 'name',all=T)
 #drop un needed columns
 drop <- c("Names","spacer","proportion_male","proportion_female","year_min","year_max")
 ids = ids[,!(names(ids) %in% drop)]
+```
 
-
-
+```{r dataloader,echo=F}
 ###2
 #run these for first time use
 #install.packages("arrow")
@@ -66,7 +72,10 @@ App_data=read_parquet('app_data_sample.parquet')
 #easier for data manipulation
 #remove when need to run
 #App_data=head(App_data,3000)
+```
 
+
+```{r data_manipu,echo=F}
 ##Transformations
 #get the date format cleaned
 App_data$Date_time=as.POSIXct(App_data$appl_status_date, format="%d%b%Y %H:%M:%S")
@@ -142,8 +151,10 @@ Quarterly_data_distinct=distinct(Quarterly_data_distinct,patex_id, .keep_all = T
 #write csv
 write.csv(Quarterly_data_distinct, "Quarterly_data_distincts.csv", row.names=FALSE)
 
+```
 
 
+```{r}
 
 ##Part 3 estimation
 
@@ -151,8 +162,39 @@ write.csv(Quarterly_data_distinct, "Quarterly_data_distincts.csv", row.names=FAL
 turnover_numbers=aggregate(resigned2 ~ Year+resigned,data=App_data, FUN= length)
 
 mobility=mean(change_au$examiner_art_unit)
-}
+
 
 ```
 
+```{r, examination of turnover}
+new_data=Quarterly_data_distinct
+# Delete rows with invalid Quarter_Year values
+new_data <- new_data[-(1:10),]
+
+# Create new data frame with excluded 2018-2019 years
+# Exclude these years as too little number of employees performed actions in 2018-2019
+turnover_data <- new_data[-(1:13),]
+
+# Create a row to indicate that an employee has left
+library(stringr)
+
+c=0
+for (i in turnover_data$Quarter_Year){
+  c=c+1
+  if(str_detect(i, '2017') == TRUE){
+  turnover_data$left[c] <- 0
+  } else {
+    turnover_data$left[c] <- 1
+  }
+}
+
+# Count number of employees that left
+emp_left = nrow(turnover_data[turnover_data$left == 1, ])
+
+# Calculate turnover (2000-2016)
+install.packages("formattable") 
+library("formattable")
+
+av_turnover = percent((emp_left/nrow(turnover_data)))
+```
 

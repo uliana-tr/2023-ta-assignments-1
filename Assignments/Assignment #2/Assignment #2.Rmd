@@ -5,6 +5,9 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+{R}
 aus=read.csv("examiner_aus.csv")
 gs=read.csv("examiner_gs.csv")
 ids=read.csv("examiner_ids.csv")
