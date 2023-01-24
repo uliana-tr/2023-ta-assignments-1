@@ -1,0 +1,121 @@
+Assignment \#2 USPTO Data
+================
+
+\`\`\`{r setup, include=FALSE knitr::opts_chunk\$set(echo = TRUE)
+aus=read.csv(“examiner_aus.csv”) gs=read.csv(“examiner_gs.csv”)
+ids=read.csv(“examiner_ids.csv”)
+
+\#install.packages(“gender”) \#install.packages(“wru”)
+
+library(gender) library(wru) library(stringr) library(dplyr)
+
+\#separate last name and first names ids\[c(‘Last_Name’,‘Names’)\] \<-
+str_split_fixed(ids\$examiner_name, ‘,’, 2)
+
+\#remove comma from last name
+ids$Last_Name<-gsub(",","",as.character(ids$Last_Name))
+
+ids$Names=trimws(ids$Names)
+
+\#sep middle initial and first name ids\[c(‘name’,‘Middle Initial’)\]
+\<- str_split_fixed(ids\$Names,’ ’, 2)
+
+\#get genders based on first name
+Gender\<-gender(ids$`name`) #remove duplicates #Gender2 <- Gender %>% distinct(name, .keep_all = TRUE) #package for ethnicty requires surname info ids$surname=ids\$Last_Name
+ids=predict_race(ids,surname.only=TRUE)
+
+\#join to data ids \<- merge(ids, Gender, by = ‘name’,all=T)
+
+\#drop un needed columns drop \<-
+c(“Names”,“spacer”,“proportion_male”,“proportion_female”,“year_min”,“year_max”)
+ids = ids\[,!(names(ids) %in% drop)\]
+
+\###2 \#run these for first time use \#install.packages(“arrow”)
+\#install.packages(“mondate”)
+
+\#required for reading parquet files library(arrow) \#required for
+aggregate library(dplyr) \#requred for quarterly_year field
+library(mondate) library(zoo)
+
+App_data=read_parquet(‘app_data_sample.parquet’)
+
+\#easier for data manipulation \#remove when need to run
+\#App_data=head(App_data,3000)
+
+\##Transformations \#get the date format cleaned
+App_data$Date_time=as.POSIXct(App_data$appl_status_date, format=“%d%b%Y
+%H:%M:%S”) \#get the quarter number
+App_data$Quarter_Year=as.character(as.yearqtr(App_data$Date_time))
+App_data$disposal_type2=App_data$disposal_type
+
+\##Data Aggregation Quarterly_data=aggregate(disposal_type \~
+disposal_type2+Quarter_Year+examiner_id,data=App_data, FUN= length)
+
+\#creat new frame that will be appeneded to Quartlery data id_temp=ids
+
+\#sort aus data then take uniques so we can get the last art units aus
+\<- aus\[order(-aus$year, -aus$month),\]
+aus_distinct=distinct(aus,old_pid, .keep_all = TRUE)
+
+\#id_temp contains merged data ready for aggregation id_temp \<-
+merge(id_temp,aus_distinct,by=‘old_pid’,all=T)
+id_temp$gender2<-id_temp$gender
+
+\#gender number based on art_number
+Gender_number=aggregate(gender2\~examiner_art_unit+gender,data=id_temp,FUN=length)
+Gender_number=filter(Gender_number, gender == “female”)
+
+\#people number based on art_number
+people_number=aggregate(old_pid\~examiner_art_unit,data=id_temp,FUN=length)
+people_number$number_people_art_unit=people_number$old_pid \#ethnicities
+ethnicity_count=aggregate(cbind(pred.whi,pred.bla,pred.his,pred.asi,pred.oth)\~examiner_art_unit,data=id_temp,FUN=sum)
+\#the “-1” excludes column 1. rounda all others \#verify if needed
+\#ethnicity_count\[,-1\] \<-round(ethnicity_count\[,-1\],0)
+
+\#merge all count data to id_temp id_temp \<-
+merge(id_temp,Gender_number,by=cbind(‘examiner_art_unit’,‘gender’),all=T)
+id_temp \<- merge(id_temp,people_number,by=‘examiner_art_unit’,all=T)
+id_temp \<- merge(id_temp,ethnicity_count,by=‘examiner_art_unit’,all=T)
+
+\#find if pat_ex have left or not \#assuming if they have left then they
+will have an end date that is not NA
+gs$end_date_format=as.POSIXct(gs$end_date, format=“%m/%d/%y”) gs \<-
+gs\[rev(order(gs\$end_date_format)),\]
+gs_distinct_emp=distinct(gs,old_pid, .keep_all = TRUE) \#results
+indicate that all employees are sill employed by this method \#we may be
+able to extrapolate the employees based on their average tenue or
+regular promotion cycles.
+
+\#change in au or not
+change_au=unique(aus\[c(‘old_pid’,‘examiner_art_unit’)\])
+change_au=aggregate(examiner_art_unit \~ old_pid,data=change_au, FUN=
+length)
+change_au$art_change=ifelse(change_au$examiner_art_unit\>1,“Y”,“N”)
+
+\#set the columns the same so that they can be mergened
+id_temp$examiner_id=id_temp$patex_id Quarterly_data \<-
+merge(Quarterly_data, id_temp, by = ‘examiner_id’,all=T)
+
+\#set checkpoint for data write.csv(Quarterly_data,
+“Quarterly_data.csv”, row.names=FALSE)
+
+Quarterly_data_distinct=Quarterly_data \#change the sorting order
+Quarterly_data_distinct
+\<-Quarterly_data_distinct\[rev(order(Quarterly_data_distinct\$Quarter_Year)),\]
+\#drop nas
+
+library(tidyr)
+Quarterly_data_distinct=Quarterly_data_distinct\[!is.na(Quarterly_data_distinct\$Quarter_Year),\]
+\#Quarterly_data_distinct=na.omit(Quarterly_data_distinct) \#get uniques
+Quarterly_data_distinct=distinct(Quarterly_data_distinct,patex_id,
+.keep_all = TRUE) \#write csv write.csv(Quarterly_data_distinct,
+“Quarterly_data_distincts.csv”, row.names=FALSE)
+
+\##Part 3 estimation
+
+\#turnover turnover_numbers=aggregate(resigned2 \~
+Year+resigned,data=App_data, FUN= length)
+
+mobility=mean(change_au\$examiner_art_unit) }
+
+\`\`\`
