@@ -108,6 +108,8 @@ Tenure=merge(App_data_start_date,App_data_end_date,by='examiner_id')
 keep <- c("Date_time.y","examiner_id","Date_time.x")
 Tenure = Tenure[,(names(Tenure) %in% keep)]
 Tenure$tenure=difftime(Tenure$Date_time.y,Tenure$Date_time.x, units = "days", "weeks")
+write.csv(Tenure, "Tenure.csv", row.names=FALSE)
+
 
 #creat new frame that will be appeneded to Quartlery data
 id_temp=ids
