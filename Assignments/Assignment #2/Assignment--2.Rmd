@@ -50,6 +50,11 @@ ids <- merge(ids, Gender, by = 'name',all=T)
 #drop un needed columns
 drop <- c("Names","spacer","proportion_male","proportion_female","year_min","year_max")
 ids = ids[,!(names(ids) %in% drop)]
+App_data=read_parquet('app_data_sample.parquet')
+
+
+
+
 ```
 
 ```{r dataloader,echo=F}
@@ -85,6 +90,24 @@ App_data$disposal_type2=App_data$disposal_type
 
 ##Data Aggregation
 Quarterly_data=aggregate(disposal_type ~ disposal_type2+Quarter_Year+examiner_id,data=App_data, FUN= length)
+
+#tenure
+
+App_data_start_date=App_data
+App_data_start_date=App_data_start_date[order(App_data_start_date$Date_time),]
+App_data_start_date=distinct(App_data_start_date,examiner_id, .keep_all = TRUE)
+
+App_data_end_date= App_data
+App_data_end_date=App_data_end_date[rev(order(App_data_end_date$Date_time)),]
+App_data_end_date=distinct(App_data_end_date,examiner_id, .keep_all = TRUE)
+
+Tenure=merge(App_data_start_date,App_data_end_date,by='examiner_id')
+
+#y is earliest 
+#x is latests
+keep <- c("Date_time.y","examiner_id","Date_time.x")
+Tenure = Tenure[,(names(Tenure) %in% keep)]
+Tenure$tenure=difftime(Tenure$Date_time.y,Tenure$Date_time.x, units = "days", "weeks")
 
 #creat new frame that will be appeneded to Quartlery data
 id_temp=ids
