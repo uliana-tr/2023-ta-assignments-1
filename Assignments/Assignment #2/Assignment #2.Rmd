@@ -7,7 +7,7 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-{R}
+```{R}
 aus=read.csv("examiner_aus.csv")
 gs=read.csv("examiner_gs.csv")
 ids=read.csv("examiner_ids.csv")

@@ -1,0 +1,163 @@
+---
+title: "Assignment 3"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Loading Documents in
+
+
+
+```{r load-data}
+#personal lveve daa from correction
+person_level_data= read.csv('person_level_data.csv')
+#data of art unitu changes
+aus=read.csv("examiner_aus.csv")
+#get id crosswalk table
+ids=read.csv("examiner_ids.csv")
+
+
+#load packages
+library(dplyr)
+```
+
+## Examiner Mobility 
+
+### Pre-Porcessing data to aggregate
+
+```{r aggregate the examiner data by year and by departement}
+
+#cleaning data for ids.Remove Nas
+ids <- ids %>% 
+  filter(!is.na(old_pid))
+
+#remove duplicatse in ids
+ids <- ids %>% 
+  distinct(
+    old_pid,
+    .keep_all = TRUE
+)
+
+#add the number of changes to art unit
+aus_changes <- aus %>%
+  group_by(old_pid) %>% 
+  summarise(
+    art_unit_changes = n(),
+    art_unit_distinct_changes = n_distinct(examiner_art_unit),
+  )
+
+#merge the ids and aus changes together so we can then merge this with the person level data
+aus_changes <-merge(
+  aus_changes,
+  ids,
+  by='old_pid'
+)
+
+#rename patex_id to examiner_id for consistency
+aus_changes <- aus_changes %>%
+  rename('examiner_id'='patex_id')
+
+
+person_level_data_complete <- merge(
+  person_level_data,
+  aus_changes,
+  by='examiner_id',
+  all.x= T
+)
+
+#remove the NAs from the art_unit changes in dataset
+person_level_data_complete <- person_level_data_complete %>%
+filter(!is.na(art_unit_changes))
+
+```
+### Feature Engineering
+
+```{r engineer binary variable }
+#if the employee is above the average number of art unit changes then they are a 1 else they are a 0 
+
+#first create annual changes
+person_level_data_complete$annual_art_change <- with(person_level_data_complete, art_unit_changes/365)
+
+mean_art_changes = mean(person_level_data_complete$annual_art_change)
+
+person_level_data_complete$high_mobility <- ifelse(person_level_data_complete$annual_art_change > mean_art_changes ,1,0)
+
+
+#remove the un-needed columns for testing dataset
+drop <- c("old_pid","examiner_name","examiner_id","art_unit_changes","art_unit_changes_distinct","new_pid","annual_art_change")
+person_level_data_complete = person_level_data_complete[,!(names(person_level_data_complete) %in% drop)]
+
+
+
+```
+
+
+### Analysis of data using Decsion Trees and Regression\
+
+#### Logistic regression
+
+```{r logistic regression }
+predictors<-c("art_unit","gender","start_year","latest_date","tenure_days","tc","work_group","art_unit_distinct_changes")
+logit=glm(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
+
+
+logit_complete=glm(high_mobility~art_unit+gender+start_year+latest_date+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
+
+summary(logit)
+
+```
+
+#### Tree model
+
+```{r tree model}
+library(tree)
+library(rpart)
+library(rpart.plot)
+
+mytree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.01))
+rpart.plot(mytree)
+
+
+
+```
+
+```{r optimal cp value for tree}
+myoverfittedtree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.0001))
+opt_cp=myoverfittedtree$cptable[which.min(myoverfittedtree$cptable[,"xerror"]),"CP"]
+plotcp(myoverfittedtree)
+```
+
+```{r optimal tree}
+mytree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=opt_cp))
+rpart.plot(mytree)
+       
+```
+
+### Evaluation of strength of model
+
+```{r Strenght evaluation}
+
+```
+
+
+#### Train & Test Data
+
+```{r Train & Test}
+
+```
+
+#### ROC Curve
+
+```{r ROC curve}
+
+```
+
+
+#### AUC for best curve
+
+```{r AUC }
+
+```
