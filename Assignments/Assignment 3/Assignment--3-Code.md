@@ -1,7 +1,9 @@
 Assignment 3
 ================
 
-## Loading Documents in
+# Pre-Processing
+
+## Loading Documents and Basic Packages
 
 ``` r
 #personal lveve daa from correction
@@ -27,9 +29,7 @@ library(dplyr)
     ## 
     ##     intersect, setdiff, setequal, union
 
-## Examiner Mobility
-
-### Pre-Porcessing data to aggregate
+## Pre-Processing Data for Aggregation by year
 
 ``` r
 #cleaning data for ids.Remove Nas
@@ -75,7 +75,7 @@ person_level_data_complete <- person_level_data_complete %>%
 filter(!is.na(art_unit_changes))
 ```
 
-### Feature Engineering
+## Feature Engineering for Categorical Variable
 
 ``` r
 #if the employee is above the average number of art unit changes then they are a 1 else they are a 0 
@@ -95,7 +95,11 @@ drop <- c("old_pid","examiner_name","examiner_id","art_unit_changes","art_unit_c
 person_level_data_complete = person_level_data_complete[,!(names(person_level_data_complete) %in% drop)]
 ```
 
-### Analysis of data using Decsion Trees and Regression
+# Analysis of data using Logistic Regression and Decision Trees
+
+## Evaluation of Strength of Logistic and Tree Models
+
+### Assume all Data Used for Training and Testing
 
 #### Logistic regression
 
@@ -239,10 +243,6 @@ rpart.plot(mytree_optimal)
 remove(mytree,myoverfittedtree)
 ```
 
-### Evaluation of strength of models
-
-#### Assume all data used for training
-
 ``` r
 ##Accuarcy evaluation with caret
 #install.packages("caret")
@@ -337,91 +337,30 @@ remove(y_tree,cm,y_logit_lrm,y_logit_glm,y_logit)
     ## Warning in remove(y_tree, cm, y_logit_lrm, y_logit_glm, y_logit): object
     ## 'y_logit_glm' not found
 
-``` r
-accuracy_glm
-```
-
-    ##  Accuracy 
-    ## 0.7537182
+#### Accuracy of Models with all Data
 
 ``` r
-precision_glm
+c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 ```
 
-    ## Precision 
-    ## 0.7134527
+    ##  Accuracy Precision    Recall        F1 
+    ## 0.7537182 0.7134527 0.8556444 0.7781058
 
 ``` r
-recall_glm
+c(accuracy_rlm,precision_rlm,recall_rlm,F1_rlm)
 ```
 
-    ##    Recall 
-    ## 0.8556444
+    ##  Accuracy Precision    Recall        F1 
+    ## 0.7537182 0.7134527 0.8556444 0.7781058
 
 ``` r
-F1_glm
+c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 ```
 
-    ##        F1 
-    ## 0.7781058
+    ##  Accuracy Precision    Recall        F1 
+    ## 0.8338795 0.8749302 0.7827173 0.8262589
 
-``` r
-accuracy_rlm
-```
-
-    ##  Accuracy 
-    ## 0.7537182
-
-``` r
-precision_rlm
-```
-
-    ## Precision 
-    ## 0.7134527
-
-``` r
-recall_rlm
-```
-
-    ##    Recall 
-    ## 0.8556444
-
-``` r
-F1_rlm
-```
-
-    ##        F1 
-    ## 0.7781058
-
-``` r
-accuracy_tree
-```
-
-    ##  Accuracy 
-    ## 0.8338795
-
-``` r
-precision_tree
-```
-
-    ## Precision 
-    ## 0.8749302
-
-``` r
-recall_tree
-```
-
-    ##    Recall 
-    ## 0.7827173
-
-``` r
-F1_tree
-```
-
-    ##        F1 
-    ## 0.8262589
-
-#### Training and Testing data sets
+### Assume Data Split into Training and Testing data sets
 
 ``` r
 #make this example reproducible
@@ -551,67 +490,27 @@ F1_tree=cm$byClass[7]
 remove(y_tree,cm,y_logit)
 ```
 
-#### Accuracy for traing and testing data
+#### Accuracy of Training & Test Models
 
 ``` r
-accuracy_glm
+c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 ```
 
-    ##  Accuracy 
-    ## 0.7560166
+    ##  Accuracy Precision    Recall        F1 
+    ## 0.7560166 0.7194951 0.8451400 0.7772727
 
 ``` r
-precision_glm
+c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 ```
 
-    ## Precision 
-    ## 0.7194951
+    ##  Accuracy Precision    Recall        F1 
+    ## 0.8381743 0.8601399 0.8105437 0.8346056
 
-``` r
-recall_glm
-```
+# ROC Curves & AUC with Training & Test Data
 
-    ##  Recall 
-    ## 0.84514
+## ROC & Precision-Recall Curves
 
-``` r
-F1_glm
-```
-
-    ##        F1 
-    ## 0.7772727
-
-``` r
-accuracy_tree
-```
-
-    ##  Accuracy 
-    ## 0.8381743
-
-``` r
-precision_tree
-```
-
-    ## Precision 
-    ## 0.8601399
-
-``` r
-recall_tree
-```
-
-    ##    Recall 
-    ## 0.8105437
-
-``` r
-F1_tree
-```
-
-    ##        F1 
-    ## 0.8346056
-
-### ROC Curve with train & test data
-
-#### GLM Model
+### Logistic Regression
 
 ``` r
 #install.packages("precrec")
@@ -647,7 +546,7 @@ plot(sscurves_glm, "PRC")
 
 ![](Assignment--3-Code_files/figure-gfm/glm%20precesion%20recall%20plots-1.png)<!-- -->
 
-#### Tree Model
+### Tree Model
 
 ``` r
 #glm
@@ -675,7 +574,9 @@ plot(sscurves_tree, "PRC")
 
 ![](Assignment--3-Code_files/figure-gfm/tree%20precesion%20recall%20plots-1.png)<!-- -->
 
-### AUC for best curve
+## AUC for best curve
+
+### Logistic Regression
 
 ``` r
 # Get a data frame with AUC scores
@@ -687,6 +588,14 @@ aucs_glm
     ## 2       m1     1        PRC 0.7414496
 
 ``` r
+# Use knitr::kable to display the result in a table format
+#knitr::kable(aucs)
+```
+
+### Tree Model
+
+``` r
+# Get a data frame with AUC scores
 aucs_tree
 ```
 

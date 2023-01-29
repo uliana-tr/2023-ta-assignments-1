@@ -10,9 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
-## Loading Documents in
+# Pre-Processing
 
-
+## Loading Documents and Basic Packages
 
 ```{r load-data}
 #personal lveve daa from correction
@@ -27,9 +27,7 @@ ids=read.csv("examiner_ids.csv")
 library(dplyr)
 ```
 
-## Examiner Mobility 
-
-### Pre-Porcessing data to aggregate
+## Pre-Processing Data for Aggregation by year
 
 ```{r aggregate the examiner data by year and by departement}
 
@@ -76,7 +74,7 @@ person_level_data_complete <- person_level_data_complete %>%
 filter(!is.na(art_unit_changes))
 
 ```
-### Feature Engineering
+## Feature Engineering for Categorical Variable
 
 ```{r engineer binary variable }
 #if the employee is above the average number of art unit changes then they are a 1 else they are a 0 
@@ -100,8 +98,10 @@ person_level_data_complete = person_level_data_complete[,!(names(person_level_da
 ```
 
 
-### Analysis of data using Decsion Trees and Regression
+# Analysis of data using Logistic Regression and Decision Trees
 
+## Evaluation of Strength of Logistic and Tree Models
+### Assume all Data Used for Training and Testing
 #### Logistic regression
 
 ```{r logistic regression with grm all data}
@@ -153,10 +153,6 @@ rpart.plot(mytree_optimal)
 remove(mytree,myoverfittedtree)
        
 ```
-
-### Evaluation of strength of models
-
-#### Assume all data used for training
 
 ```{r Strenght evaluation all data}
 ##Accuarcy evaluation with caret
@@ -230,28 +226,19 @@ remove(y_tree,cm,y_logit_lrm,y_logit_glm,y_logit)
 
 ```
 
+#### Accuracy of Models with all Data
+
 ```{r results print out all data}
 
-accuracy_glm
-precision_glm
-recall_glm
-F1_glm
+c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 
-accuracy_rlm
-precision_rlm
-recall_rlm
-F1_rlm
+c(accuracy_rlm,precision_rlm,recall_rlm,F1_rlm)
 
-
-
-accuracy_tree
-precision_tree
-recall_tree
-F1_tree
+c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 
 ```
 
-#### Training and Testing data sets
+### Assume Data Split into Training and Testing data sets
 
 ```{r Train & Test}
 #make this example reproducible
@@ -346,27 +333,20 @@ remove(y_tree,cm,y_logit)
 
 ```
 
-#### Accuracy for traing and testing data
+#### Accuracy of Training & Test Models
 
 ```{r results print out Train & Test}
 
-accuracy_glm
-precision_glm
-recall_glm
-F1_glm
+c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 
-accuracy_tree
-precision_tree
-recall_tree
-F1_tree
-
+c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 ```
 
+# ROC Curves & AUC with Training & Test Data
 
+## ROC &  Precision-Recall Curves
 
-### ROC Curve with train & test data
-
-#### GLM Model
+### Logistic Regression 
 
 ```{r ROC curve}
 #install.packages("precrec")
@@ -398,7 +378,7 @@ plot(sscurves_glm, "PRC")
 
 
 
-#### Tree Model
+### Tree Model
 
 ```{r Tree ROC }
 #glm
@@ -422,18 +402,22 @@ plot(sscurves_tree, "PRC")
 ```
 
 
-### AUC for best curve
-
-```{r AUC }
+## AUC for best curve
+### Logistic Regression
+```{r AUC GLM }
 # Get a data frame with AUC scores
 aucs_glm
-aucs_tree
 # Use knitr::kable to display the result in a table format
 #knitr::kable(aucs)
 ```
 
-
-
+### Tree Model
+```{r AUC Tree }
+# Get a data frame with AUC scores
+aucs_tree
+# Use knitr::kable to display the result in a table format
+#knitr::kable(aucs)
+```
 
 
 ## Unused code Section
