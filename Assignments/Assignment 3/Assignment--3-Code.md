@@ -73,6 +73,9 @@ person_level_data_complete <- merge(
 #remove the NAs from the art_unit changes in dataset
 person_level_data_complete <- person_level_data_complete %>%
 filter(!is.na(art_unit_changes))
+
+person_level_data_complete <- person_level_data_complete %>%
+filter(!is.na(start_year))
 ```
 
 ## Feature Engineering for Categorical Variable
@@ -105,7 +108,7 @@ person_level_data_complete = person_level_data_complete[,!(names(person_level_da
 
 ``` r
 predictors<-c("art_unit","gender","start_year","tenure_days","tc","work_group","art_unit_distinct_changes")
-logit=glm(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
+logit=glm(high_mobility~art_unit+gender+tenure_days+tc+work_group+start_year,data=person_level_data_complete,family = "binomial")
 
 
 #logit_complete=glm(high_mobility~art_unit+gender+start_year+latest_date+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
@@ -115,32 +118,30 @@ summary(logit)
 
     ## 
     ## Call:
-    ## glm(formula = high_mobility ~ art_unit + gender + start_year + 
-    ##     tenure_days + tc + work_group + art_unit_distinct_changes, 
-    ##     family = "binomial", data = person_level_data_complete)
+    ## glm(formula = high_mobility ~ art_unit + gender + tenure_days + 
+    ##     tc + work_group + start_year, family = "binomial", data = person_level_data_complete)
     ## 
     ## Deviance Residuals: 
     ##     Min       1Q   Median       3Q      Max  
-    ## -3.0670  -0.7479  -0.1007   0.7991   3.3822  
+    ## -1.9134  -0.8612  -0.2276   0.8309   2.7119  
     ## 
     ## Coefficients:
-    ##                             Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)                2.631e+02  5.738e+01   4.585 4.55e-06 ***
-    ## art_unit                   9.793e-03  1.661e-02   0.590 0.555525    
-    ## gendermale                 2.312e-03  8.947e-02   0.026 0.979390    
-    ## start_year                -1.341e-01  2.855e-02  -4.698 2.62e-06 ***
-    ## tenure_days                7.405e-04  6.109e-05  12.122  < 2e-16 ***
-    ## tc                         6.919e-03  1.782e-03   3.884 0.000103 ***
-    ## work_group                -1.651e-02  1.649e-02  -1.001 0.316654    
-    ## art_unit_distinct_changes  6.764e-01  3.472e-02  19.480  < 2e-16 ***
+    ##               Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept)  1.021e+02  5.228e+01   1.952   0.0509 .  
+    ## art_unit    -1.517e-02  1.541e-02  -0.984   0.3249    
+    ## gendermale   7.948e-02  8.333e-02   0.954   0.3402    
+    ## tenure_days  7.520e-04  5.844e-05  12.868  < 2e-16 ***
+    ## tc           7.861e-03  1.629e-03   4.824  1.4e-06 ***
+    ## work_group   8.001e-03  1.527e-02   0.524   0.6003    
+    ## start_year  -5.334e-02  2.600e-02  -2.052   0.0402 *  
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## (Dispersion parameter for binomial family taken to be 1)
     ## 
     ##     Null deviance: 5499.1  on 3966  degrees of freedom
-    ## Residual deviance: 3771.5  on 3959  degrees of freedom
-    ## AIC: 3787.5
+    ## Residual deviance: 4286.7  on 3960  degrees of freedom
+    ## AIC: 4300.7
     ## 
     ## Number of Fisher Scoring iterations: 5
 
@@ -179,7 +180,7 @@ library(rms)
     ##     backsolve
 
 ``` r
-logit_lrm=lrm(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete)
+logit_lrm=lrm(high_mobility~art_unit+gender+tenure_days+tc+work_group+start_year,data=person_level_data_complete,maxit=1000,tol=1e-11)
 
 
 #logit_complete=glm(high_mobility~art_unit+gender+start_year+latest_date+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
@@ -189,26 +190,25 @@ logit_lrm
 
     ## Logistic Regression Model
     ##  
-    ##  lrm(formula = high_mobility ~ art_unit + gender + start_year + 
-    ##      tenure_days + tc + work_group + art_unit_distinct_changes, 
-    ##      data = person_level_data_complete)
+    ##  lrm(formula = high_mobility ~ art_unit + gender + tenure_days + 
+    ##      tc + work_group + start_year, data = person_level_data_complete, 
+    ##      tol = 1e-11, maxit = 1000)
     ##  
-    ##                         Model Likelihood     Discrimination    Rank Discrim.    
-    ##                               Ratio Test            Indexes          Indexes    
-    ##  Obs          3967    LR chi2    1727.55     R2       0.471    C       0.854    
-    ##   No          2002    d.f.             7    R2(7,3967)0.352    Dxy     0.708    
-    ##   Yes         1965    Pr(> chi2) <0.0001    R2(7,2975)0.439    gamma   0.708    
-    ##  max |deriv| 6e-08                           Brier    0.154    tau-a   0.354    
+    ##                          Model Likelihood     Discrimination    Rank Discrim.    
+    ##                                Ratio Test            Indexes          Indexes    
+    ##  Obs           3967    LR chi2    1212.41     R2       0.351    C       0.795    
+    ##   No           2002    d.f.             6    R2(6,3967)0.262    Dxy     0.590    
+    ##   Yes          1965    Pr(> chi2) <0.0001    R2(6,2975)0.333    gamma   0.590    
+    ##  max |deriv| 0.0001                           Brier    0.179    tau-a   0.295    
     ##  
-    ##                            Coef     S.E.    Wald Z Pr(>|Z|)
-    ##  Intercept                 263.0525 57.3761  4.58  <0.0001 
-    ##  art_unit                    0.0098  0.0166  0.59  0.5555  
-    ##  gender=male                 0.0023  0.0895  0.03  0.9794  
-    ##  start_year                 -0.1341  0.0285 -4.70  <0.0001 
-    ##  tenure_days                 0.0007  0.0001 12.12  <0.0001 
-    ##  tc                          0.0069  0.0018  3.88  0.0001  
-    ##  work_group                 -0.0165  0.0165 -1.00  0.3167  
-    ##  art_unit_distinct_changes   0.6764  0.0347 19.48  <0.0001 
+    ##              Coef     S.E.    Wald Z Pr(>|Z|)
+    ##  Intercept   102.0712 52.2810  1.95  0.0509  
+    ##  art_unit     -0.0152  0.0154 -0.98  0.3249  
+    ##  gender=male   0.0795  0.0833  0.95  0.3402  
+    ##  tenure_days   0.0008  0.0001 12.87  <0.0001 
+    ##  tc            0.0079  0.0016  4.82  <0.0001 
+    ##  work_group    0.0080  0.0153  0.52  0.6003  
+    ##  start_year   -0.0533  0.0260 -2.05  0.0402  
     ## 
 
 #### Tree model
@@ -218,14 +218,23 @@ library(tree)
 library(rpart)
 library(rpart.plot)
 
-mytree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.01))
+mytree=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=0.01)
+)
 rpart.plot(mytree)
 ```
 
 ![](Assignment--3-Code_files/figure-gfm/tree%20model%20all%20data-1.png)<!-- -->
 
 ``` r
-myoverfittedtree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.0001))
+myoverfittedtree=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=0.0001)
+)
+
 opt_cp=myoverfittedtree$cptable[which.min(myoverfittedtree$cptable[,"xerror"]),"CP"]
 plotcp(myoverfittedtree)
 ```
@@ -233,7 +242,12 @@ plotcp(myoverfittedtree)
 ![](Assignment--3-Code_files/figure-gfm/optimal%20cp%20value%20for%20tree%20all%20data-1.png)<!-- -->
 
 ``` r
-mytree_optimal=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=opt_cp))
+mytree_optimal=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=opt_cp)
+)
+
 rpart.plot(mytree_optimal)
 ```
 
@@ -344,21 +358,21 @@ c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 ```
 
     ##  Accuracy Precision    Recall        F1 
-    ## 0.7537182 0.7134527 0.8556444 0.7781058
+    ## 0.7146458 0.6984489 0.7647353 0.7300906
 
 ``` r
 c(accuracy_rlm,precision_rlm,recall_rlm,F1_rlm)
 ```
 
     ##  Accuracy Precision    Recall        F1 
-    ## 0.7537182 0.7134527 0.8556444 0.7781058
+    ## 0.7146458 0.6984489 0.7647353 0.7300906
 
 ``` r
 c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 ```
 
     ##  Accuracy Precision    Recall        F1 
-    ## 0.8338795 0.8749302 0.7827173 0.8262589
+    ## 0.7874968 0.8459701 0.7077922 0.7707370
 
 ### Assume Data Split into Training and Testing data sets
 
@@ -376,7 +390,7 @@ test   <- person_level_data_complete[!sample, ]
 
 ``` r
 logit=glm(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=train,
   family = "binomial"
 )
@@ -387,31 +401,29 @@ summary(logit)
     ## 
     ## Call:
     ## glm(formula = high_mobility ~ art_unit + gender + start_year + 
-    ##     tenure_days + tc + work_group + art_unit_distinct_changes, 
-    ##     family = "binomial", data = train)
+    ##     tenure_days + tc + work_group, family = "binomial", data = train)
     ## 
     ## Deviance Residuals: 
     ##     Min       1Q   Median       3Q      Max  
-    ## -2.8521  -0.7477  -0.0958   0.7945   3.3890  
+    ## -1.9196  -0.8549  -0.2097   0.8168   2.7688  
     ## 
     ## Coefficients:
-    ##                             Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)                2.088e+02  7.254e+01   2.878  0.00401 ** 
-    ## art_unit                   4.438e-03  2.004e-02   0.222  0.82469    
-    ## gendermale                -2.726e-02  1.074e-01  -0.254  0.79972    
-    ## start_year                -1.072e-01  3.608e-02  -2.971  0.00297 ** 
-    ## tenure_days                8.362e-04  7.982e-05  10.476  < 2e-16 ***
-    ## tc                         6.956e-03  2.154e-03   3.229  0.00124 ** 
-    ## work_group                -1.122e-02  1.987e-02  -0.565  0.57227    
-    ## art_unit_distinct_changes  6.500e-01  4.182e-02  15.542  < 2e-16 ***
+    ##               Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept)  5.241e+01  6.665e+01   0.786 0.431679    
+    ## art_unit    -1.651e-02  1.873e-02  -0.882 0.378044    
+    ## gendermale   5.990e-02  1.004e-01   0.597 0.550786    
+    ## start_year  -2.872e-02  3.313e-02  -0.867 0.386118    
+    ## tenure_days  8.378e-04  7.631e-05  10.980  < 2e-16 ***
+    ## tc           7.641e-03  1.983e-03   3.853 0.000117 ***
+    ## work_group   9.517e-03  1.855e-02   0.513 0.607945    
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## (Dispersion parameter for binomial family taken to be 1)
     ## 
     ##     Null deviance: 3828.7  on 2761  degrees of freedom
-    ## Residual deviance: 2617.2  on 2754  degrees of freedom
-    ## AIC: 2633.2
+    ## Residual deviance: 2942.9  on 2755  degrees of freedom
+    ## AIC: 2956.9
     ## 
     ## Number of Fisher Scoring iterations: 5
 
@@ -419,7 +431,7 @@ summary(logit)
 
 ``` r
 myoverfittedtree=rpart(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=train,
   control=rpart.control(cp=0.0001)
 )
@@ -435,7 +447,7 @@ remove(myoverfittedtree)
 
 ``` r
 mytree_optimal=rpart(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=person_level_data_complete,
   control=rpart.control(cp=opt_cp)
 )
@@ -497,14 +509,14 @@ c(accuracy_glm,precision_glm,recall_glm,F1_glm)
 ```
 
     ##  Accuracy Precision    Recall        F1 
-    ## 0.7560166 0.7194951 0.8451400 0.7772727
+    ## 0.7053942 0.6863905 0.7644152 0.7233048
 
 ``` r
 c(accuracy_tree,precision_tree,recall_tree,F1_tree)
 ```
 
     ##  Accuracy Precision    Recall        F1 
-    ## 0.8381743 0.8601399 0.8105437 0.8346056
+    ## 0.7858921 0.8483034 0.7001647 0.7671480
 
 # ROC Curves & AUC with Training & Test Data
 
@@ -584,8 +596,8 @@ aucs_glm
 ```
 
     ##   modnames dsids curvetypes      aucs
-    ## 1       m1     1        ROC 0.7553459
-    ## 2       m1     1        PRC 0.7414496
+    ## 1       m1     1        ROC 0.7049501
+    ## 2       m1     1        PRC 0.6772011
 
 ``` r
 # Use knitr::kable to display the result in a table format
@@ -600,8 +612,8 @@ aucs_tree
 ```
 
     ##   modnames dsids curvetypes      aucs
-    ## 1       m1     1        ROC 0.8383822
-    ## 2       m1     1        PRC 0.7922232
+    ## 1       m1     1        ROC 0.7865372
+    ## 2       m1     1        PRC 0.7231303
 
 ``` r
 # Use knitr::kable to display the result in a table format

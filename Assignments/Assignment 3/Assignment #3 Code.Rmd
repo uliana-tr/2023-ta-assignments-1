@@ -73,6 +73,8 @@ person_level_data_complete <- merge(
 person_level_data_complete <- person_level_data_complete %>%
 filter(!is.na(art_unit_changes))
 
+person_level_data_complete <- person_level_data_complete %>%
+filter(!is.na(start_year))
 ```
 ## Feature Engineering for Categorical Variable
 
@@ -106,7 +108,7 @@ person_level_data_complete = person_level_data_complete[,!(names(person_level_da
 
 ```{r logistic regression with grm all data}
 predictors<-c("art_unit","gender","start_year","tenure_days","tc","work_group","art_unit_distinct_changes")
-logit=glm(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
+logit=glm(high_mobility~art_unit+gender+tenure_days+tc+work_group+start_year,data=person_level_data_complete,family = "binomial")
 
 
 #logit_complete=glm(high_mobility~art_unit+gender+start_year+latest_date+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
@@ -117,7 +119,7 @@ summary(logit)
 
 ```{r logistic regression with lrm all data}
 library(rms)
-logit_lrm=lrm(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete)
+logit_lrm=lrm(high_mobility~art_unit+gender+tenure_days+tc+work_group+start_year,data=person_level_data_complete,maxit=1000,tol=1e-11)
 
 
 #logit_complete=glm(high_mobility~art_unit+gender+start_year+latest_date+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,family = "binomial")
@@ -133,7 +135,11 @@ library(tree)
 library(rpart)
 library(rpart.plot)
 
-mytree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.01))
+mytree=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=0.01)
+)
 rpart.plot(mytree)
 
 
@@ -141,13 +147,23 @@ rpart.plot(mytree)
 ```
 
 ```{r optimal cp value for tree all data}
-myoverfittedtree=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=0.0001))
+myoverfittedtree=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=0.0001)
+)
+
 opt_cp=myoverfittedtree$cptable[which.min(myoverfittedtree$cptable[,"xerror"]),"CP"]
 plotcp(myoverfittedtree)
 ```
 
 ```{r optimal tree all data}
-mytree_optimal=rpart(high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,data=person_level_data_complete,control=rpart.control(cp=opt_cp))
+mytree_optimal=rpart(
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
+  data=person_level_data_complete,
+  control=rpart.control(cp=opt_cp)
+)
+
 rpart.plot(mytree_optimal)
 
 remove(mytree,myoverfittedtree)
@@ -255,7 +271,7 @@ test   <- person_level_data_complete[!sample, ]
 
 ```{r logistic regression with grm Train & Test}
 logit=glm(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=train,
   family = "binomial"
 )
@@ -268,7 +284,7 @@ summary(logit)
 
 ```{r optimal cp value for tree Train & Test}
 myoverfittedtree=rpart(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=train,
   control=rpart.control(cp=0.0001)
 )
@@ -279,7 +295,7 @@ remove(myoverfittedtree)
 
 ```{r optimal tree Train & Test}
 mytree_optimal=rpart(
-  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group+art_unit_distinct_changes,
+  high_mobility~art_unit+gender+start_year+tenure_days+tc+work_group,
   data=person_level_data_complete,
   control=rpart.control(cp=opt_cp)
 )
