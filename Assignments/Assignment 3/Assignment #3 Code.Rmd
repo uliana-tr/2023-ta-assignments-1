@@ -266,7 +266,13 @@ train  <- person_level_data_complete[sample, ]
 test   <- person_level_data_complete[!sample, ]
 
 ```
-
+ 
+#### Evaluation of Training and Test
+ 
+```{r Train & Test Eval}
+summary(train)
+summary(test)
+```
 #### Logistic regression
 
 ```{r logistic regression with grm Train & Test}

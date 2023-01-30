@@ -386,6 +386,60 @@ train  <- person_level_data_complete[sample, ]
 test   <- person_level_data_complete[!sample, ]
 ```
 
+#### Evaluation of Training and Test
+
+``` r
+summary(train)
+```
+
+    ##     art_unit       gender            start_year   latest_date       
+    ##  Min.   :1600   Length:2762        Min.   :2000   Length:2762       
+    ##  1st Qu.:1714   Class :character   1st Qu.:2000   Class :character  
+    ##  Median :2111   Mode  :character   Median :2002   Mode  :character  
+    ##  Mean   :1976                      Mean   :2003                     
+    ##  3rd Qu.:2169                      3rd Qu.:2005                     
+    ##  Max.   :2496                      Max.   :2015                     
+    ##   tenure_days         tc         work_group   art_unit_distinct_changes
+    ##  Min.   : 267   Min.   :1600   Min.   :1600   Min.   : 1.000           
+    ##  1st Qu.:3884   1st Qu.:1700   1st Qu.:1710   1st Qu.: 1.000           
+    ##  Median :5194   Median :2100   Median :2110   Median : 2.000           
+    ##  Mean   :4750   Mean   :1932   Mean   :1972   Mean   : 2.567           
+    ##  3rd Qu.:6218   3rd Qu.:2100   3rd Qu.:2160   3rd Qu.: 3.000           
+    ##  Max.   :6518   Max.   :2400   Max.   :2490   Max.   :17.000           
+    ##  high_mobility glm_prediction rlm_prediction tree_prediction
+    ##  No :1395      No :1521       No :1521       No :1167       
+    ##  Yes:1367      Yes:1241       Yes:1241       Yes:1595       
+    ##                                                             
+    ##                                                             
+    ##                                                             
+    ## 
+
+``` r
+summary(test)
+```
+
+    ##     art_unit       gender            start_year   latest_date       
+    ##  Min.   :1609   Length:1205        Min.   :2000   Length:1205       
+    ##  1st Qu.:1723   Class :character   1st Qu.:2000   Class :character  
+    ##  Median :2115   Mode  :character   Median :2002   Mode  :character  
+    ##  Mean   :1988                      Mean   :2003                     
+    ##  3rd Qu.:2174                      3rd Qu.:2005                     
+    ##  Max.   :2495                      Max.   :2016                     
+    ##   tenure_days         tc         work_group   art_unit_distinct_changes
+    ##  Min.   :  27   Min.   :1600   Min.   :1600   Min.   : 1.000           
+    ##  1st Qu.:3782   1st Qu.:1700   1st Qu.:1720   1st Qu.: 1.000           
+    ##  Median :5116   Median :2100   Median :2110   Median : 2.000           
+    ##  Mean   :4718   Mean   :1943   Mean   :1984   Mean   : 2.621           
+    ##  3rd Qu.:6207   3rd Qu.:2100   3rd Qu.:2170   3rd Qu.: 3.000           
+    ##  Max.   :6350   Max.   :2400   Max.   :2490   Max.   :21.000           
+    ##  high_mobility glm_prediction rlm_prediction tree_prediction
+    ##  No :607       No :671        No :671        No :508        
+    ##  Yes:598       Yes:534        Yes:534        Yes:697        
+    ##                                                             
+    ##                                                             
+    ##                                                             
+    ## 
+
 #### Logistic regression
 
 ``` r
