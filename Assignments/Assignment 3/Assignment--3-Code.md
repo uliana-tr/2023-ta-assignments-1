@@ -606,7 +606,7 @@ aucs_glm <- auc(sscurves_glm)
 ```
 
 ``` r
-# Show a Precision-Recall plot
+# Show a Precision-Recall pl ot
 plot(sscurves_glm, "PRC")
 ```
 
