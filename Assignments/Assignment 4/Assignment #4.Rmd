@@ -207,7 +207,8 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
 
 
 #### Decide on two tech centers
-Comparing two tech centers based on the number of examiners
+Comparing two tech centers based on the number of examiners.
+We have chosen to examain 1600 and 2100 as these two centers demonstrate pthe closes paralell trends.
 ```{r causal Inference two centers}
 
 tc_in=c(1600,2100)

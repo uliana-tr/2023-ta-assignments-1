@@ -312,7 +312,9 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
 
 #### Decide on two tech centers
 
-Comparing two tech centers based on the number of examiners
+Comparing two tech centers based on the number of examiners. We have
+chosen to examain 1600 and 2100 as these two centers demonstrate pthe
+closes paralell trends.
 
 ``` r
 tc_in=c(1600,2100)
@@ -538,14 +540,14 @@ summary(impact)
     ## 
     ##                          Average          Cumulative      
     ## Actual                   14880            565451          
-    ## Prediction (s.d.)        1374 (379)       52223 (14396)   
-    ## 95% CI                   [680, 2158]      [25848, 81997]  
+    ## Prediction (s.d.)        1374 (381)       52223 (14487)   
+    ## 95% CI                   [604, 2119]      [22965, 80527]  
     ##                                                           
-    ## Absolute effect (s.d.)   13506 (379)      513228 (14396)  
-    ## 95% CI                   [12722, 14200]   [483454, 539603]
+    ## Absolute effect (s.d.)   13506 (381)      513228 (14487)  
+    ## 95% CI                   [12761, 14276]   [484924, 542486]
     ##                                                           
-    ## Relative effect (s.d.)   1110% (845%)     1110% (845%)    
-    ## 95% CI                   [590%, 2088%]    [590%, 2088%]   
+    ## Relative effect (s.d.)   1096% (493%)     1096% (493%)    
+    ## 95% CI                   [602%, 2362%]    [602%, 2362%]   
     ## 
     ## Posterior tail-area probability p:   0.00102
     ## Posterior prob. of a causal effect:  99.89837%
@@ -603,13 +605,13 @@ summary(impact)
     ##                          Average         Cumulative   
     ## Actual                   84              418          
     ## Prediction (s.d.)        7.3 (2.3)       36.7 (11.3)  
-    ## 95% CI                   [3, 12]         [15, 58]     
+    ## 95% CI                   [3, 12]         [15, 59]     
     ##                                                       
     ## Absolute effect (s.d.)   76 (2.3)        381 (11.3)   
-    ## 95% CI                   [72, 81]        [360, 403]   
+    ## 95% CI                   [72, 81]        [359, 403]   
     ##                                                       
-    ## Relative effect (s.d.)   1307% (4230%)   1307% (4230%)
-    ## 95% CI                   [618%, 2535%]   [618%, 2535%]
+    ## Relative effect (s.d.)   1208% (784%)    1208% (784%) 
+    ## 95% CI                   [610%, 2709%]   [610%, 2709%]
     ## 
     ## Posterior tail-area probability p:   0.001
     ## Posterior prob. of a causal effect:  99.8996%
