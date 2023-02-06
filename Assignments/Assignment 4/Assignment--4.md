@@ -329,7 +329,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
   geom_point(alpha=3/10)+ 
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of Examiners leaving in time t+1 for tc 1700 & 2400")
+  ggtitle("Number of Examiners leaving in time t+1 for tc 1600 & 2400")
 ```
 
 ![](Assignment--4_files/figure-gfm/causal%20Inference%20two%20centers-1.png)<!-- -->
@@ -432,7 +432,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
    geom_vline(xintercept = "2003 Q1", linetype="dotted", color = "blue", size=1.5)+
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of in tc with predicted difference point (tc 1700 & 2400)")
+  ggtitle("Number of in tc with predicted difference point (tc 1600 & 2400)")
 ```
 
     ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
@@ -448,7 +448,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
    geom_vline(xintercept = "2013 Q1", linetype="dotted", color = "blue", size=1.5)+
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of examiners leaving (tc 1700 & 2400)")
+  ggtitle("Number of examiners leaving (tc 1600 & 2400)")
 ```
 
     ## Warning: Removed 5 rows containing missing values (`geom_line()`).
@@ -512,15 +512,22 @@ Q_data_plot_num <-Q_data_plot2[ , !names(Q_data_plot2) %in% c("leaving")] ## wor
 
 
 impactdata <- Q_data_plot_num
-impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
+#impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
 impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
-impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
-impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+#impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
+#impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
 
-pre.period <- c(1, 38)
-post.period <- c(39, 262)
+impactdata <- impactdata %>% 
+  group_by(Quarter_Year) %>% 
+  summarise(
+    num_exam = sum(num_exam)
+    )
 
-causaldata <- impactdata[, 4:8]
+
+pre.period <- c(1, 15)
+post.period <- c(30, 67)
+
+causaldata <- impactdata[,2]
 
 impact <- CausalImpact(causaldata, pre.period, post.period)
 
@@ -529,19 +536,19 @@ summary(impact)
 
     ## Posterior inference {CausalImpact}
     ## 
-    ##                          Average         Cumulative      
-    ## Actual                   2971            665543          
-    ## Prediction (s.d.)        242 (45)        54247 (10046)   
-    ## 95% CI                   [155, 329]      [34642, 73612]  
-    ##                                                          
-    ## Absolute effect (s.d.)   2729 (45)       611296 (10046)  
-    ## 95% CI                   [2643, 2817]    [591931, 630901]
-    ##                                                          
-    ## Relative effect (s.d.)   1179% (303%)    1179% (303%)    
-    ## 95% CI                   [804%, 1821%]   [804%, 1821%]   
+    ##                          Average          Cumulative      
+    ## Actual                   14880            565451          
+    ## Prediction (s.d.)        1374 (379)       52223 (14396)   
+    ## 95% CI                   [680, 2158]      [25848, 81997]  
+    ##                                                           
+    ## Absolute effect (s.d.)   13506 (379)      513228 (14396)  
+    ## 95% CI                   [12722, 14200]   [483454, 539603]
+    ##                                                           
+    ## Relative effect (s.d.)   1110% (845%)     1110% (845%)    
+    ## 95% CI                   [590%, 2088%]    [590%, 2088%]   
     ## 
-    ## Posterior tail-area probability p:   0.001
-    ## Posterior prob. of a causal effect:  99.8998%
+    ## Posterior tail-area probability p:   0.00102
+    ## Posterior prob. of a causal effect:  99.89837%
     ## 
     ## For more details, type: summary(impact, "report")
 
@@ -552,45 +559,60 @@ plot(impact)
 ![](Assignment--4_files/figure-gfm/running%20causal%20analysis%202-1.png)<!-- -->
 
 ``` r
-Q_data_plot_t <- Q_data_plot2 %>% 
+Q_data_plot_t <-Q_data_plot2[ , !names(Q_data_plot2) %in% c("num_exam")] ## works as expected 
+
+
+
+Q_data_plot_t <- Q_data_plot_t %>% 
   filter(!is.na(leaving))
 
-impactdata <- Q_data_plot_t
-impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
-impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
-impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
-impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+Q_data_plot_t <- Q_data_plot_t %>% 
+  filter(!grepl("female",gender))
 
-pre.period <- c(1, 38)
-post.period <- c(39, 262)
+Q_data_plot_t <- Q_data_plot_t %>% 
+  filter(grepl(2100,tc))
 
-causaldata <- impactdata[, 4:8]
+Q_data_plot_t <- Q_data_plot_t %>% 
+  group_by(Quarter_Year) %>% 
+  summarise(
+    leaving = sum(leaving)
+    )
+
+
+impactdata <- Q_data_plot_t[ , !names(Q_data_plot_t) %in% c("tc","gender","Quarter_Year")] ## works as expected 
+
+#impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
+#impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
+#impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
+#impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+
+
+pre.period <- c(1, 50)
+post.period <- c(60, 64)
+
+causaldata <- impactdata
+
 
 impact <- CausalImpact(causaldata, pre.period, post.period)
-```
 
-    ## Warning in FormatInputPrePostPeriod(pre.period, post.period, data): Setting
-    ## post.period[2] to end of data: 227
-
-``` r
 summary(impact)
 ```
 
     ## Posterior inference {CausalImpact}
     ## 
-    ##                          Average         Cumulative      
-    ## Actual                   3297            623061          
-    ## Prediction (s.d.)        415 (94)        78470 (17792)   
-    ## 95% CI                   [224, 634]      [42246, 119867] 
-    ##                                                          
-    ## Absolute effect (s.d.)   2881 (94)       544591 (17792)  
-    ## 95% CI                   [2662, 3073]    [503194, 580815]
-    ##                                                          
-    ## Relative effect (s.d.)   743% (425%)     743% (425%)     
-    ## 95% CI                   [420%, 1343%]   [420%, 1343%]   
+    ##                          Average         Cumulative   
+    ## Actual                   84              418          
+    ## Prediction (s.d.)        7.3 (2.3)       36.7 (11.3)  
+    ## 95% CI                   [3, 12]         [15, 58]     
+    ##                                                       
+    ## Absolute effect (s.d.)   76 (2.3)        381 (11.3)   
+    ## 95% CI                   [72, 81]        [360, 403]   
+    ##                                                       
+    ## Relative effect (s.d.)   1307% (4230%)   1307% (4230%)
+    ## 95% CI                   [618%, 2535%]   [618%, 2535%]
     ## 
     ## Posterior tail-area probability p:   0.001
-    ## Posterior prob. of a causal effect:  99.9%
+    ## Posterior prob. of a causal effect:  99.8996%
     ## 
     ## For more details, type: summary(impact, "report")
 
