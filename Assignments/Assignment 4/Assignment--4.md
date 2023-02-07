@@ -204,7 +204,7 @@ ggplot(data=Q_data_plot, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender,
 ![](Assignment--4_files/figure-gfm/causal%20Inference%20plots-3.png)<!-- -->
 
 ``` r
-tc_in=c(1700,2400)
+tc_in=c(1600,2100)
 
 Q_data_plot2 <- Q_data_plot %>% 
   filter(tc %in% tc_in)
@@ -218,7 +218,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
   geom_point(alpha=3/10)+ 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of Examiners over time in tc 1700 & 2400")
+  ggtitle("Number of Examiners over time in tc 1600 & 2100")
 ```
 
 ![](Assignment--4_files/figure-gfm/causal%20Inference%20plots-4.png)<!-- -->
@@ -230,7 +230,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
   geom_point(alpha=3/10)+ 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of Examiners in tc removed gender nas")
+  ggtitle("Number of Examiners in tc removed gender NAs")
 ```
 
 ![](Assignment--4_files/figure-gfm/causal%20Inference%20plots-5.png)<!-- -->
