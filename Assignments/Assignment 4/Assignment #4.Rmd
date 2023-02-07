@@ -9,12 +9,13 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
-# Pre-Processing
+# Data Cleaning and Pre-Processing
 
-## Loading Documents and Basic Packages
- 
+## Loading Data and Basic Packages
+
+### Load packages
+
 ```{r loading}
-#load packages
 library(tidyverse)
 library(dplyr)
 library(stringr)
@@ -22,54 +23,69 @@ library(arrow)
 library(lubridate)
 library(zoo)
 library(ggplot2)
+```
 
-#personal level data from correction
+### Load data
+```{r loading}
+
+# Personal level data from correction
 person_level_data= read.csv('person_level_data.csv')
-#data of art unit changes
+
+# Data of art unit changes
 aus=read.csv("examiner_aus.csv")
-#get id crosswalk table
+
+# Get id crosswalk table
 ids=read.csv("examiner_ids.csv")
-#get parquet data
+
+# Get parquet data
 App_data=read_parquet('app_data_sample.parquet')
-
-
 
 ```
 
 ## Clean Data
 ```{r cleaning the data}
-#cleaning data for ids.Remove Nas
+# Clean ids dataset
+
+## Remove Nas
 ids <- ids %>% 
   filter(!is.na(old_pid))
 
-#remove duplicatse in ids
+## Remove duplicatse in ids
 ids <- ids %>% 
   distinct(
     old_pid,
     .keep_all = TRUE
 )
-#clean the parquet dataset
+
+
+# Clean parquet dataset
 App_data <- App_data %>% 
   mutate(start_date = ymd(filing_date), Status_date = as_date(dmy_hms(appl_status_date))) %>% 
   filter(year(Status_date)<2018)
 
-#Merge the App ID and the person level data to get additional details we can bring in as needed
+# Merge the App ID and the person level data to get additional details we can bring in as needed
 App_data <- merge(App_data, person_level_data, by = 'examiner_id',all=T)
-# clean the dataset
+
+# Clean the app dataset
 App_data <- App_data %>% 
   filter(!is.na(examiner_id))
-#rename tc.x to tc
+
+# Rename tc.x to tc
 names(App_data)[names(App_data) == "tc.x"] <- "tc"
 
 ```
 
 ## Pre-process
-```{r pre-preocess quarterly data}
+```{r pre-process quarterly data}
 
 Q_data=App_data
-#get the quarter number
-Q_data$Quarter_Year=as.character(as.yearqtr(Q_data$Status_date))
 
+# Get the quarter number
+Q_data$Quarter_Year=as.character(as.yearqtr(Q_data$Status_date))
+```
+### Create new dataset that only includes data to be used in analysis
+
+```{r pre-process quarterly data}
 Q_data_leaving <- Q_data
 
 Q_data <- Q_data %>% 
@@ -77,7 +93,6 @@ Q_data <- Q_data %>%
   summarise(
     num_exam = n()
     )
-
 
 Q_data_leaving <- Q_data_leaving %>% 
   group_by(examiner_art_unit, examiner_id,gender) %>% 
@@ -103,7 +118,7 @@ Q_data_plot <- Q_data %>%
 
 ```
 
-## Use Quarterly Data to Get Number of Examiners per Technology Centers 
+### Use Quarterly Data to Get Number of Examiners per Technology Centers 
 
 ```{r feature eng quarterly data}
 library(ggplot2)
@@ -119,8 +134,9 @@ ggplot(Q_data , aes(x=as_factor(tc),y=num_exam,fill=gender)) +
 ```
 
 # Casual Inference
+
 ## Demonstrate Causality Validity
-Here are are examining the number of examiners per quarter and year
+Here we are analyzing the number of examiners per quarter and year.
 
 ```{r causal Inference investigation by year}
 
@@ -135,7 +151,7 @@ print(ggplot(Q_data_temp , aes(x=as_factor(tc),y=num_exam,fill=gender)) +
 }
 ```
 
-Here we look at the tc data based on who will leave at time t+1
+Here we look at the tc data based on who will leave at time t+1.
 ```{r causal Inference on t+1 data}
 ggplot(data=Q_data_plot, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender,group=interaction(as_factor(tc),gender))) +
   geom_line(aes(color=as_factor(tc)))+
@@ -147,8 +163,9 @@ ggplot(data=Q_data_plot, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender,
 
 
 
-###Demonstrate Paralel Trends (Plot line graphs)
+### Demonstrate Paralel Trends (Plot line graphs)
 We can see identical trends across all Technology Centers for the number of examiners per quarter.
+
 ```{r causal Inference plots}
 
 ggplot(data=Q_data_plot, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gender,group=interaction(as_factor(tc),gender))) +
@@ -205,9 +222,10 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
 
 ```
 
+## Compare two tech centers
 
-#### Decide on two tech centers
-Comparing two tech centers based on the number of examiners
+### Decide on two tech centers
+Here we are comparing two tech centers based on the number of examiners.
 ```{r causal Inference two centers}
 
 tc_in=c(1600,2100)
@@ -229,7 +247,7 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
 ```
 
 
-#### Analyse each treatment center (summary stats)
+### Analyze each chosen treatment center (summary stats)
 
 ```{r causal Inference summary stats}
 
@@ -274,14 +292,6 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
 
 ```
 
-### Run some PCA on data set (should demonstrate main components not any direction/ co-linear assumptions)
-
-### Run decsion tree analysis (to help understand logistic regression)
-```{r running causal analysis}
-#
-
-
-```
 
 ## Run Causal analysis
 ```{r running causal analysis 2 }
@@ -335,7 +345,3 @@ plot(impact)
 
 ```
 
-## Itterate/refine variables (if we have time)
-```{r refining variables}
-
-```
