@@ -224,8 +224,11 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
 
 ## Compare two tech centers
 
+
 ### Decide on two tech centers
-Here we are comparing two tech centers based on the number of examiners:
+Comparing two tech centers based on the number of examiners.
+We have chosen to examain 1600 and 2100 as these two centers demonstrate pthe closes paralell trends.
+
 ```{r causal Inference two centers}
 
 tc_in=c(1600,2100)
@@ -242,7 +245,8 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
   geom_point(alpha=3/10)+ 
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of Examiners leaving in time t+1 for tc 1600 & 2100")
+        ggtitle("Number of Examiners leaving in time t+1 for tc 1600 & 2100")
+
 
 ```
 
@@ -287,8 +291,9 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=num_exam, shape=gende
    geom_vline(xintercept = "2003 Q1", linetype="dotted", color = "blue", size=1.5)+
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size=4.5),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of in tc with predicted difference point (tc 1600 & 2100)")
+        ggtitle("Number of in tc with predicted difference point (tc 1600 & 2100)")
 ```
+
  
 Treatment date - 2013 Q1:
 ```{r causal Inference treatment evaluation}
@@ -299,7 +304,8 @@ ggplot(data=Q_data_plot2, aes(x=as_factor(Quarter_Year), y=leaving, shape=gender
    geom_vline(xintercept = "2013 Q1", linetype="dotted", color = "blue", size=1.5)+
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
         plot.title = element_text(color="black", size=14, face="bold.italic"))+
-  ggtitle("Number of examiners leaving (tc 1600 & 2100)")
+        ggtitle("Number of examiners leaving (tc 1600 & 2100)")
+
  
 
 ```
@@ -316,15 +322,22 @@ Q_data_plot_num <-Q_data_plot2[ , !names(Q_data_plot2) %in% c("leaving")]
 
 
 impactdata <- Q_data_plot_num
-impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
+#impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
 impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
-impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
-impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+#impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
+#impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
 
-pre.period <- c(1, 38)
-post.period <- c(39, 262)
+impactdata <- impactdata %>% 
+  group_by(Quarter_Year) %>% 
+  summarise(
+    num_exam = sum(num_exam)
+    )
 
-causaldata <- impactdata[, 4:8]
+
+pre.period <- c(1, 15)
+post.period <- c(30, 67)
+
+causaldata <- impactdata[,2]
 
 impact <- CausalImpact(causaldata, pre.period, post.period)
 
@@ -334,20 +347,41 @@ plot(impact)
 ```
 Treatment date - 2013 Q1:
 ```{r running causal analysis time}
+Q_data_plot_t <-Q_data_plot2[ , !names(Q_data_plot2) %in% c("num_exam")] ## works as expected 
 
-Q_data_plot_t <- Q_data_plot2 %>% 
+
+
+Q_data_plot_t <- Q_data_plot_t %>% 
   filter(!is.na(leaving))
 
-impactdata <- Q_data_plot_t
-impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
-impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
-impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
-impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+Q_data_plot_t <- Q_data_plot_t %>% 
+  filter(!grepl("female",gender))
 
-pre.period <- c(1, 198)
-post.period <- c(199, 262)
+Q_data_plot_t <- Q_data_plot_t %>% 
+  filter(grepl(2100,tc))
 
-causaldata <- impactdata[, 4:8]
+Q_data_plot_t <- Q_data_plot_t %>% 
+  group_by(Quarter_Year) %>% 
+  summarise(
+    leaving = sum(leaving)
+    )
+
+
+impactdata <- Q_data_plot_t[ , !names(Q_data_plot_t) %in% c("tc","gender","Quarter_Year")] ## works as expected 
+
+#impactdata$female <- ifelse(impactdata$gender == 'female', 1, 0)
+#impactdata$male <- ifelse(impactdata$gender == 'male', 1, 0)
+#impactdata$tc_1600 <- ifelse(impactdata$tc == '1600', 1, 0)
+#impactdata$tc_2100 <- ifelse(impactdata$tc == '2100', 1, 0)
+
+
+pre.period <- c(1, 50)
+post.period <- c(60, 64)
+
+
+causaldata <- impactdata
+
+
 
 impact <- CausalImpact(causaldata, pre.period, post.period)
 
